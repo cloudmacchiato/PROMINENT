@@ -1,5 +1,0 @@
-[console_scripts]
-PROMINENT-data_prepare = PROMINENT.dataprep:dataprep
-PROMINENT-model_interpret = PROMINENT.interpret:get_feature_importance
-PROMINENT-scores = PROMINENT.scores:get_scores
-PROMINENT-train_test = PROMINENT.train_test:train

@@ -1,0 +1,5 @@
+[console_scripts]
+PROMINENT-data_prepare = PROMINENT_methylation.dataprep:dataprep
+PROMINENT-model_interpret = PROMINENT_methylation.interpret:get_feature_importance
+PROMINENT-scores = PROMINENT_methylation.scores:get_scores
+PROMINENT-train_test = PROMINENT_methylation.train_test:train

@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: PROMINENT-methylation
+Version: 0.1.7
+Summary: PROMINENT: AN INTERPRETABLE DEEP LEARNING METHOD TO PREDICT PHENOTYPES USING DNA METHYLATION
+Home-page: https://github.com/cloudmacchiato/dlmethylation
+Author: Laizhi Zhang
+Author-email: laz64@pitt.edu
+License: MIT

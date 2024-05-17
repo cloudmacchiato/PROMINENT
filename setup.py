@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(
-    name='prominent',
-    version='0.1',
-    packages=['prominent'],
+    name='PROMINENT_methylation',
+    version='0.1.7',
+    packages=['PROMINENT_methylation'],
     description='PROMINENT: AN INTERPRETABLE DEEP LEARNING METHOD TO PREDICT PHENOTYPES USING DNA METHYLATION',
     url='https://github.com/cloudmacchiato/dlmethylation',
     author='Laizhi Zhang',
@@ -11,20 +11,19 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'prominent-data_prepare = prominent.dataprep:dataprep',
-            'prominent-train_test = prominent.train_test:train',
-            'prominent-scores = prominent.scores:get_scores',
-            'prominent-model_interpret = prominent.interpret:get_feature_importance'
+            'PROMINENT-data_prepare = PROMINENT_methylation.dataprep:dataprep',
+            'PROMINENT-train_test_cv = PROMINENT_methylation.train_test:train',
+            'PROMINENT-scores = PROMINENT_methylation.scores:get_scores',
+            'PROMINENT-model_interpret = PROMINENT_methylation.interpret:get_feature_importance'
         ]
     },
     install_requires=['numpy',
-                      'pandas',
-                      'scikit-learn',
                       'shap',
-                      'pickle',
                       'seaborn',
                       'matplotlib',
                       'torch',
                       'imblearn'
     ]
 )
+
+# functions: independent testing

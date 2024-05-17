@@ -12,7 +12,7 @@ setup(
     entry_points={
         'console_scripts': [
             'PROMINENT-data_prepare = PROMINENT_methylation.dataprep:dataprep',
-            'PROMINENT-train_test = PROMINENT_methylation.train_test:train',
+            'PROMINENT-train_test_cv = PROMINENT_methylation.train_test:train',
             'PROMINENT-scores = PROMINENT_methylation.scores:get_scores',
             'PROMINENT-model_interpret = PROMINENT_methylation.interpret:get_feature_importance'
         ]
@@ -25,3 +25,5 @@ setup(
                       'imblearn'
     ]
 )
+
+# functions: independent testing, input for model explanation (rownames)

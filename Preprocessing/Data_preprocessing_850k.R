@@ -171,12 +171,8 @@ for(i in 1:length(gene.list)){
     gene.average.beta[i,1:547] <- mean(MethFlt[which(gene == gene.list[i]),])/(mean(MethFlt[which(gene == gene.list[i]),])+mean(UnmethFlt[which(gene == gene.list[i]),])+1)
   }
 }
-write.table(gene.average.beta, "/ix/ksoyeon/YQ/data/Idiopathic_Pulmonary_Fibrosis/gene.average.beta.by.intensity.txt", quote = F, row.names = T) #24728
-gene.average.beta <- read.table("/ix/ksoyeon/YQ/data/Idiopathic_Pulmonary_Fibrosis/gene.average.beta.by.intensity.txt")
+write.table(gene.average.beta, "gene.average.beta.by.intensity.txt", quote = F, row.names = T) #24728
+gene.average.beta <- read.table("gene.average.beta.by.intensity.txt")
 
-################### prepare methylation data (CpG site level) ###################
-beta <- MethFlt/(MethFlt+UnmethFlt+1)
-write.table(beta, "/ix/ksoyeon/YQ/data/Idiopathic_Pulmonary_Fibrosis/beta.by.intensity.all.regions.txt", quote = F, row.names = T) # 688,195 * 100
-write.table(beta, "/ix/ksoyeon/YQ/data/Idiopathic_Pulmonary_Fibrosis/beta.by.intensity.txt", quote = F, row.names = T) # 481378
-beta <- read.table("/ix/ksoyeon/YQ/data/Idiopathic_Pulmonary_Fibrosis/beta.by.intensity.txt")
+
 

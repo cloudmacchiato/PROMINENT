@@ -2,6 +2,7 @@ README.md
 setup.py
 PROMINENT_methylation/__init__.py
 PROMINENT_methylation/dataprep.py
+PROMINENT_methylation/independent_test.py
 PROMINENT_methylation/interpret.py
 PROMINENT_methylation/model.py
 PROMINENT_methylation/scores.py

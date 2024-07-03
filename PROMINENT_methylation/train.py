@@ -36,7 +36,7 @@ class train_kfold:
         self.trainArgs = trainArgs
         self.seed_worker(trainArgs['seed'])
         os.environ["CUDA_VISIBLE_DEVICES"]=trainArgs['device']
-        self.device = torch.device('cuda')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         directory = './CV_best_model'
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -215,7 +215,7 @@ class train_kfold1:
         self.trainArgs = trainArgs
         self.seed_worker(trainArgs['seed'])
         os.environ["CUDA_VISIBLE_DEVICES"]=trainArgs['device']
-        self.device = torch.device('cuda')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         directory = './CV_best_model'
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -412,9 +412,11 @@ class train_kfold2:
         self.trainArgs = trainArgs
         self.seed_worker(trainArgs['seed'])
         os.environ["CUDA_VISIBLE_DEVICES"]=trainArgs['device']
-        self.device = torch.device('cuda')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print(self.device)
 
     def kfold(self):
+        print(self.device)
         trainArgs = self.trainArgs
         x_data = trainArgs['x_data']
         input_dim = x_data.shape[1]
@@ -600,7 +602,7 @@ class train_kfold_mlp:
         self.trainArgs = trainArgs
         self.seed_worker(trainArgs['seed'])
         os.environ["CUDA_VISIBLE_DEVICES"]=trainArgs['device']
-        self.device = torch.device('cuda')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         directory = './CV_best_model'
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -771,7 +773,7 @@ class train_kfold3:
         self.trainArgs = trainArgs
         self.seed_worker(trainArgs['seed'])
         os.environ["CUDA_VISIBLE_DEVICES"]=trainArgs['device']
-        self.device = torch.device('cuda')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     def kfold(self):
         trainArgs = self.trainArgs
@@ -977,7 +979,7 @@ class train_kfold4:
         self.trainArgs = trainArgs
         self.seed_worker(trainArgs['seed'])
         os.environ["CUDA_VISIBLE_DEVICES"]=trainArgs['device']
-        self.device = torch.device('cuda')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         directory = './CV_best_model'
         if not os.path.exists(directory):
             os.makedirs(directory)

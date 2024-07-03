@@ -1,14 +1,24 @@
-import os, torch
+import os, copy, torch, random, time, datetime
 import numpy as np
 import pandas as pd
 from torch import nn
 import torch.nn.functional as F
+from torch.utils.data import Dataset
+from torch.utils.data import DataLoader
+from sklearn import metrics
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import SMOTE
+import shap
+import pickle
 import matplotlib.pyplot as plt
 import argparse
 from sklearn.metrics import roc_curve, precision_recall_curve, auc
 from sklearn.metrics import roc_auc_score, average_precision_score
 from sklearn.metrics import precision_recall_curve, matthews_corrcoef,accuracy_score
+from PROMINENT_methylation.model import *
+from PROMINENT_methylation.utils import *
 
 def preprocessing1(path_fn, gene_fn, label_fn):
     ### pathway datasets
@@ -22,6 +32,7 @@ def preprocessing1(path_fn, gene_fn, label_fn):
         print("pathway matrix shape : ",pathway_info.shape)
         print("num_pathway : ",pathway_info.shape[0])
     else:
+        print("No pathway information!")
         pathway_info = None
         
     ### methylation datasets
@@ -111,13 +122,17 @@ class train_test:
         self.trainArgs = trainArgs
         self.seed_worker(trainArgs['seed'])
         os.environ["CUDA_VISIBLE_DEVICES"]=trainArgs['device']
-        self.device = torch.device('cuda')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         directory = './CV_best_model'
         if not os.path.exists(directory):
             os.makedirs(directory)
 
     def kfold(self):
         trainArgs = self.trainArgs
+        expression1 = trainArgs['expression1']
+        status1 = trainArgs['status1']
+        expression = trainArgs['expression']
+        status = trainArgs['status']
         input_dim =expression.shape[1]
         pathway_info = trainArgs['pathway_info'].to(self.device)
         num_pathway = pathway_info.shape[0]
@@ -125,6 +140,7 @@ class train_test:
         lr_list = trainArgs['lr_list']
         random_seed = trainArgs['seed']
        
+        
         kfold = StratifiedKFold(n_splits = 10, shuffle=True, random_state = random_seed)
         best_test_auc = 0
         best_fold = 0
@@ -292,8 +308,6 @@ def independent_test():
     parser.add_argument('--input_label_train', default='label_train.csv', help='Input training label file path.')
     parser.add_argument('--input_label_test', default='label_test.csv', help='Input testing label file path.')
     parser.add_argument('--input_pathway', default='pathway_gobp.csv', help='Pathway information from dataprep.')
-    parser.add_argument('--output', default='pred.pkl', help='Prediction output file path. pkl file.')
-    parser.add_argument('--output_shap', default='shap.pkl', help='Model interpretation output file path. pkl file.')
     parser.add_argument('--mlp', action='store_true', help='DNN only model.')
 
     args = parser.parse_args()
@@ -303,12 +317,11 @@ def independent_test():
     input_file_label_train = args.input_label_train
     input_file_label_test = args.input_label_test
     input_file_path = args.input_pathway
-    output_file = args.output
-    output_file_shap = args.output_shap
     mlp = args.mlp
     
     pathway_info, expression, status, features = preprocessing1(input_file_path, input_file_train_csv, input_file_label_train)
     pathway_info1, expression1, status1, features1 = preprocessing1(input_file_path, input_file_test_csv, input_file_label_test)
+    print(pathway_info)
     
     trainArgs = {}
     trainArgs['pathway_info'] = pathway_info
@@ -319,9 +332,12 @@ def independent_test():
     #trainArgs['lr_list'] = [0.0001]
     trainArgs['device'] = '0'
     trainArgs['seed'] = 0
-    trainArgs['pathway'] = pathway
-    trainArgs['tissue'] = tissue
     trainArgs['filename'] = 'result.csv'
+    trainArgs['expression1'] = expression1
+    trainArgs['status1'] = status1
+    trainArgs['expression'] = expression
+    trainArgs['status'] = status
+    
     
     train = train_test(trainArgs)
     y_prob, y_test, y_prob_train, y_true_train, shap_values, shap_values_feat= train.kfold()
@@ -337,7 +353,7 @@ def independent_test():
     pr2, rc2, f2 = fscore(y_true,y_prob,2)
     pr5, rc5, f5 = fscore(y_true,y_prob,5)
     pr10, rc10, f10 = fscore(y_true,y_prob,10)
-    threshold = get_threshold(y_true_train_mlp, y_prob_train_mlp)
+    threshold = get_threshold(y_true, y_prob)
     mcc, threshold = mcc_score(y_true, y_prob,threshold)
     y_pred = np.greater(y_prob, threshold).astype(int)
     acc = accuracy_score(y_true, y_pred)
@@ -352,22 +368,25 @@ def independent_test():
     pr2, rc2, f2 = fscore(y_true,y_prob,2)
     pr5, rc5, f5 = fscore(y_true,y_prob,5)
     pr10, rc10, f10 = fscore(y_true,y_prob,10)
-    threshold = get_threshold(y_true_train_mlp, y_prob_train_mlp)
+    threshold = get_threshold(y_true, y_prob)
     mcc, threshold = mcc_score(y_true, y_prob,threshold)
     y_pred = np.greater(y_prob, threshold).astype(int)
     acc = accuracy_score(y_true, y_pred)
     tpr, tnr, ppv, npv = calculate_metrics(y_true, y_pred)
     scores.append([auc,prauc, mcc,threshold, acc,tpr, tnr, ppv, npv,f1,f2,f5,f10])
     index.append("Train")
+    
 
     shap = shap_values
     feature_importance = np.sum(np.abs(shap[1]), axis=0)[64:]
     print(feature_importance.shape)
     positive_sum = np.sum(shap[1] * (shap[1] > 0), axis=0)[64:]
     negative_sum = np.sum(shap[1] * (shap[1] < 0), axis=0)[64:]
+    print(len(features),len(feature_importance),len(positive_sum),len(negative_sum))
     fi_result = pd.DataFrame({"path_name":features,"importance":feature_importance, "pos":positive_sum,"neg": np.abs(negative_sum)})
+    
     df_sorted = fi_result.sort_values(by='importance', ascending=False)
-    df_sorted.to_csv("Independent_Importance.csv",index=False)
+    df_sorted.to_csv("Pathway_Importance.csv",index=False)
     features = pd.read_csv("gene.average.beta.by.intensity.csv",index_col=0).index.tolist()
     print(len(features))
     shap = shaps[1]
@@ -375,6 +394,16 @@ def independent_test():
     print(feature_importance.shape)
     positive_sum = np.sum(shap[1] * (shap[1] > 0), axis=0)
     negative_sum = np.sum(shap[1] * (shap[1] < 0), axis=0)
-    fi_result = pd.DataFrame({"path_name":features,"importance":feature_importance, "pos":positive_sum,"neg": np.abs(negative_sum)})
+    print(len(features),len(feature_importance),len(positive_sum),len(negative_sum))
+    fi_result = pd.DataFrame({"gene_name":features,"importance":feature_importance, "pos":positive_sum,"neg": np.abs(negative_sum)})
     df_sorted = fi_result.sort_values(by='importance', ascending=False)
-    df_sorted.to_csv("Independent_FEP_GOBP_Feature_Importance.csv",index=False)
+    df_sorted.to_csv("Gene_Feature_Importance.csv",index=False)
+    
+    data = np.array(scores)
+    col_names = ["AUROC","PRAUC", "MCC", "Threshold(by MCC)", "Accuracy","TPR(recall)", "TNR(specificity)", "PPV(precision)", "NPV","Fscore(beta=1)", "Fscore(beta=2)", "Fscore(beta=5)","Fscore(beta=10)"]
+    df = pd.DataFrame(data, index=index, columns=col_names)
+    
+    df.to_csv("Result.csv")
+    
+if __name__ == '__main__':
+    independent_test()

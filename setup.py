@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='PROMINENT_methylation',
-    version='0.1.7',
+    version='0.1.9',
     packages=['PROMINENT_methylation'],
     description='PROMINENT: AN INTERPRETABLE DEEP LEARNING METHOD TO PREDICT PHENOTYPES USING DNA METHYLATION',
     url='https://github.com/cloudmacchiato/dlmethylation',
@@ -14,7 +14,8 @@ setup(
             'PROMINENT-data_prepare = PROMINENT_methylation.dataprep:dataprep',
             'PROMINENT-train_test_cv = PROMINENT_methylation.train_test:train',
             'PROMINENT-scores = PROMINENT_methylation.scores:get_scores',
-            'PROMINENT-model_interpret = PROMINENT_methylation.interpret:get_feature_importance'
+            'PROMINENT-model_interpret = PROMINENT_methylation.interpret:get_feature_importance',
+            'PROMINENT-model_train_test_independent = PROMINENT_methylation.independent_test:independent_test'
         ]
     },
     install_requires=['numpy',
@@ -25,5 +26,3 @@ setup(
                       'imblearn'
     ]
 )
-
-# functions: independent testing, input for model explanation (rownames)
